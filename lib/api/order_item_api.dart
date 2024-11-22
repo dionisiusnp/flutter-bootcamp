@@ -1,5 +1,4 @@
 import 'package:marketplace_apps/model/order_item_model.dart';
-import 'package:marketplace_apps/model/order_model.dart';
 import 'package:http/http.dart' show Client;
 import 'dart:convert';
 class OrderItemApi {
