@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/seller/create_product_screen.dart';
 
 class ProductScreen extends StatefulWidget {
   ProductScreen({Key? key}) : super(key: key);
@@ -103,7 +104,10 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Tambah produk
+          Navigator.push(
+            context, 
+            MaterialPageRoute(builder: (context) => CreateProductScreen()),
+          );
         },
         child: Icon(Icons.add),
       ),
