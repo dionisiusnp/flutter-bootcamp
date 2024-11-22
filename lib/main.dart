@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/seller/product_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,6 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -85,6 +87,18 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+        actions: [
+            IconButton(
+              icon: Icon(Icons.add),
+              color: Colors.black,
+              onPressed: () {
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (context) => ProductScreen()),
+                );
+              },
+            )
+        ],
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
