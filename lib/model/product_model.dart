@@ -2,6 +2,7 @@ import 'dart:convert';
 
 class Product {
   int? id;
+  String? image;
   String? name;
   String? description;
   int? price;
@@ -12,6 +13,7 @@ class Product {
 
   Product(
       {this.id,
+      this.image,
       this.name,
       this.description,
       this.price,
@@ -22,6 +24,7 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> map) {
     return Product(
         id: map["id"],
+        image: map["image"],
         name: map["name"],
         description: map["description"],
         price: map["price"],
@@ -34,6 +37,7 @@ class Product {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
+      "image": image,
       "name": name,
       "description": description,
       "price": price,
@@ -46,7 +50,7 @@ class Product {
 
   @override
   String toString() {
-    return 'Product{id: $id, name: $name,  description: $description, price: $price, shipping_cost: $shipping_cost, is_available: $is_available, product_category_id: $product_category_id, created_at: $created_at}';
+    return 'Product{id: $id, image: $image, name: $name,  description: $description, price: $price, shipping_cost: $shipping_cost, is_available: $is_available, product_category_id: $product_category_id, created_at: $created_at}';
   }
 }
 
