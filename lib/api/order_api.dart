@@ -1,7 +1,7 @@
 import 'package:marketplace_apps/model/order_model.dart';
 import 'package:http/http.dart' show Client;
 import 'dart:convert';
-class Order {
+class OrderApi {
   final String baseUrl = "http://127.0.0.1:8002";
   Client client = Client();
 
@@ -40,7 +40,7 @@ class Order {
     }
   }
 
-  Future<bool> updateChat(Order data) async {
+  Future<bool> updateOrder(Order data) async {
     final response = await client.put(
       Uri.parse("$baseUrl/api/chat/${data.id}"),
       headers: {"content-type": "application/json"},
@@ -53,7 +53,7 @@ class Order {
     }
   }
 
-  Future<bool> deleteChat(int id) async {
+  Future<bool> deleteOrder(int id) async {
     final response = await client.delete(
       Uri.parse("$baseUrl/api/chat/$id"),
       headers: {"content-type": "application/json"},
