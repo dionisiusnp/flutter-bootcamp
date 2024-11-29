@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/seller/product/index_screen.dart';
+import 'package:marketplace_apps/seller/seller_screen.dart';
 import 'register.dart';
+import 'package:http/http.dart' as http;
 
 class Login extends StatefulWidget {
   const Login({
@@ -18,6 +23,47 @@ class _LoginState extends State<Login> {
   final TextEditingController _controllerPassword = TextEditingController();
 
   bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final url = Uri.parse('http://backend-bootcamp.localhost/api/login');
+    final body = {
+      "email": _controllerUsername.text,
+      "password": _controllerPassword.text
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          // Login berhasil, gunakan token
+          final token = data['token'];
+          print("Login berhasil. Token: $token");
+
+          // Navigasi ke halaman berikutnya
+          Navigator.pushReplacement(context,  MaterialPageRoute(builder: (context) => SellerScreen()),);
+        } 
+      } 
+    } catch (e) {
+      
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,11 +151,7 @@ class _LoginState extends State<Login> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        print('submitted');
-                      }
-                    },
+                    onPressed: _login,
                     child: const Text("Login"),
                   ),
                   Row(
