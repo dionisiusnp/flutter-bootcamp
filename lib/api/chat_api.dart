@@ -2,8 +2,24 @@ import 'package:marketplace_apps/model/chat_model.dart';
 import 'package:http/http.dart' show Client;
 import 'dart:convert';
 class ChatApi {
-  final String baseUrl = "http://127.0.0.1:8002";
+  final String baseUrl = "http://127.0.0.1:8001";
   Client client = Client();
+
+  Future<List<Chat>> getChatsSeller() async {
+    final response = await client.get(Uri.parse("$baseUrl/api/chat/seller"));
+    print("Response body: ${response.body}");
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+      List<dynamic> data = jsonResponse['data'];
+
+      List<Chat> chats = data.map<Chat>((item) => Chat.fromJson(item)).toList();
+
+      return chats;
+    } else {
+      return [];
+    }
+  }
 
   Future<List<Chat>> getChats() async {
     final response = await client.get(Uri.parse("$baseUrl/api/chat"));
