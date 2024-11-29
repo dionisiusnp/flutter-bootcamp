@@ -58,12 +58,12 @@ class _LoginState extends State<Login> {
           if (data['user'] == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => BuyerScreen()),
+              MaterialPageRoute(builder: (context) => SellerScreen()),
             );
           } else {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => SellerScreen()),
+              MaterialPageRoute(builder: (context) => BuyerScreen()),
             );
           }
         } else {

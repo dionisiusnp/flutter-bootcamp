@@ -38,7 +38,7 @@ class _RegisterState extends State<Register> {
       "name": _controllerUsername.text,
       "email": _controllerEmail.text,
       "password": _controllerPassword.text,
-      "is_seller": true,
+      "is_seller": false,
       "address": 'Surabaya'
     };
 
