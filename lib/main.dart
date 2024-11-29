@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:marketplace_apps/buyer/buyer_screen.dart';
 import 'package:marketplace_apps/buyer/product_screen.dart';
+import 'auth/login.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: BuyerScreen(),
+      home: const Login(),
     );
   }
 }
