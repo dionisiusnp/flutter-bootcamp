@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class Register extends StatefulWidget {
   @override
@@ -18,6 +21,93 @@ class _RegisterState extends State<Register> {
       TextEditingController();
 
   bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  Future<void> _register() async {
+    // Pastikan form sudah valid sebelum mengirim request
+    if (!_formKey.currentState!.validate()) {
+      return; // Tidak melanjutkan jika form tidak valid
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final url = Uri.parse('http://backend-bootcamp.localhost/api/register');
+    final body = {
+      "name": _controllerUsername.text,
+      "email": _controllerEmail.text,
+      "password": _controllerPassword.text,
+      "is_seller": true,
+      "address": 'Surabaya'
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          print("User berhasil terbuat.");
+          // Tampilkan pesan sukses atau navigasi ke halaman login
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text("Success"),
+              content: Text("Registration successful! Please log in."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx); // Tutup dialog
+                    Navigator.pop(context); // Kembali ke halaman login
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Tampilkan pesan error jika server memberikan respons gagal
+          _showErrorDialog(data['message'] ?? "Registration failed.");
+        }
+      } else if (response.statusCode == 404) {
+        // Tampilkan pesan jika user tidak ditemukan (kode 404)
+        _showErrorDialog("User not found or invalid data.");
+      } else {
+        // Tampilkan pesan error untuk status HTTP lainnya
+        _showErrorDialog("Server error: ${response.statusCode}");
+      }
+    } catch (e) {
+      _showErrorDialog("An error occurred: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Fungsi untuk menampilkan dialog error
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -167,26 +257,7 @@ class _RegisterState extends State<Register> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            width: 200,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.secondary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            content: const Text("Registered Successfully"),
-                          ),
-                        );
-
-                        _formKey.currentState?.reset();
-
-                        Navigator.pop(context);
-                      }
-                    },
+                    onPressed: _register,
                     child: const Text("Register"),
                   ),
                   Row(

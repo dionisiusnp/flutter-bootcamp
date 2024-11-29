@@ -26,6 +26,11 @@ class _LoginState extends State<Login> {
   bool _isLoading = false;
 
   Future<void> _login() async {
+    // Cek apakah semua field valid
+    if (!_formKey.currentState!.validate()) {
+      return; // Jika tidak valid, tidak melakukan apa-apa
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -48,22 +53,49 @@ class _LoginState extends State<Login> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true) {
-          // Login berhasil, gunakan token
+          // Login berhasil
           final token = data['token'];
           print("Login berhasil. Token: $token");
 
-          // Navigasi ke halaman berikutnya
-          Navigator.pushReplacement(context,  MaterialPageRoute(builder: (context) => SellerScreen()),);
-        } 
-      } 
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SellerScreen()),
+          );
+        } else {
+          // Tampilkan error jika login gagal
+          _showErrorDialog(data['message'] ?? "Login failed.");
+        }
+      } else {
+        // Tampilkan error jika ada masalah di server
+        _showErrorDialog("User tidak ditemukan");
+      }
     } catch (e) {
-      
+      // Tampilkan error jika ada masalah di server
+        _showErrorDialog("User tidak ditemukan");
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
+  } 
+
+  // Fungsi untuk menampilkan dialog error
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
