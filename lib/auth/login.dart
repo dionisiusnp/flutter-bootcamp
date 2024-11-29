@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/buyer/buyer_screen.dart';
 import 'package:marketplace_apps/seller/product/index_screen.dart';
 import 'package:marketplace_apps/seller/seller_screen.dart';
 import 'register.dart';
@@ -54,13 +55,17 @@ class _LoginState extends State<Login> {
         final data = json.decode(response.body);
         if (data['success'] == true) {
           // Login berhasil
-          final token = data['token'];
-          print("Login berhasil. Token: $token");
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => SellerScreen()),
-          );
+          if (data['user'] == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => BuyerScreen()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => SellerScreen()),
+            );
+          }
         } else {
           // Tampilkan error jika login gagal
           _showErrorDialog(data['message'] ?? "Login failed.");

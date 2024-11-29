@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CreateCategoryScreen extends StatelessWidget {
+class CreateCategoryScreen extends StatefulWidget {
+  @override
+  _CreateCategoryScreenState createState() => _CreateCategoryScreenState();
+}
+
+class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
