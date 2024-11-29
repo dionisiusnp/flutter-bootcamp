@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 class CreateProductScreen extends StatefulWidget {
-  CreateProductScreen({Key? key}) : super(key: key);
-
   @override
   _CreateProductScreenState createState() => _CreateProductScreenState();
 }
@@ -191,34 +189,6 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2, // Posisi ADD pada bar
-        onTap: (index) {
-          // TODO: Handle navigation
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: 'Chat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'ADD',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Chart',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Account',
-          ),
-        ],
       ),
     );
   }

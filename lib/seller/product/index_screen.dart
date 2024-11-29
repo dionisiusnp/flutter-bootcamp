@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:marketplace_apps/seller/create_product_screen.dart';
+import 'package:marketplace_apps/seller/product/create_screen.dart';
 
-class ProductScreen extends StatefulWidget {
-  ProductScreen({Key? key}) : super(key: key);
-
-  @override
-  _ProductScreenState createState() => _ProductScreenState();
-}
-
-class _ProductScreenState extends State<ProductScreen> {
+class IndexProductScreen extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> _allProducts = [
     {"name": "Produk 1", "description": "Short Description", "price": 5000000, "is_available": true},
@@ -17,9 +10,7 @@ class _ProductScreenState extends State<ProductScreen> {
     {"name": "Produk 4", "description": "Short Description", "price": 5000000, "is_available": true},
     {"name": "Produk 5", "description": "Short Description", "price": 5000000, "is_available": true},
   ];
-
-  int _currentIndex = 0;
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,30 +79,16 @@ class _ProductScreenState extends State<ProductScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(icon: Icon(Icons.home), onPressed: () {}),
-            IconButton(icon: Icon(Icons.chat), onPressed: () {}),
-            SizedBox(width: 48), // Space for the FAB
-            IconButton(icon: Icon(Icons.shopping_cart), onPressed: () {}),
-            IconButton(icon: Icon(Icons.account_circle), onPressed: () {}),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context, 
-            MaterialPageRoute(builder: (context) => CreateProductScreen()),
+            MaterialPageRoute(builder: (context) => CreateProductScreen())
           );
+          // Action for add category
         },
         child: Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -150,4 +127,5 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
     );
   }
+
 }
