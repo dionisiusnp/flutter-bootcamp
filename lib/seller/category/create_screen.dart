@@ -7,6 +7,29 @@ class CreateCategoryScreen extends StatefulWidget {
 
 class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey();
+  final TextEditingController _categoryNameController = TextEditingController();
+
+  bool _isLoading = false;
+
+  Future<void> _submit() async {
+    // Pastikan form sudah valid sebelum mengirim request
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Success'),
+          content: const Text('Category has been successfully added!'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx); // Close the dialog
+                Navigator.pop(context); // Go back to the previous screen
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +99,7 @@ class _CreateCategoryScreenState extends State<CreateCategoryScreen> {
             Align(
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
-                onPressed: () {
-                  // Handle save category functionality
-                },
+                onPressed: _submit,
                 child: Icon(Icons.check),
               ),
             )
