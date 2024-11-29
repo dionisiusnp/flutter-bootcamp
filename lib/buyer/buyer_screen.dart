@@ -14,7 +14,8 @@ class _BuyerScreenState extends State<BuyerScreen> {
   // List tampilan yang dapat dipilih di bottom navigation
   final List<Widget> _screens = [
     ProductScreen(),
-    OrdersScreen(), // Biodata Usaha
+    OrdersScreen(),
+    WishlistScreen(), // Biodata Usaha
   ];
 
   void _onTap(int index) {
@@ -45,6 +46,10 @@ class _BuyerScreenState extends State<BuyerScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.history_outlined),
             label: 'Orders',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_border),
+            label: 'Wishlist',
           ),
         ],
       ),
