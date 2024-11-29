@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:marketplace_apps/buyer/product_screen.dart';
-import 'auth/login.dart';
+import 'package:marketplace_apps/auth/login.dart';
 
 void main() {
   runApp(const MyApp());
