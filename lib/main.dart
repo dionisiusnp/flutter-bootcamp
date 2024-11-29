@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/buyer/buyer_screen.dart';
+import 'package:marketplace_apps/buyer/product_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +33,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: BuyerScreen(),
     );
   }
 }
@@ -116,9 +118,17 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        // onPressed on other ProductScreen
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductScreen(),
+            ),
+          );
+        },
+        tooltip: 'Product',
+        child: const Icon(Icons.abc),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
