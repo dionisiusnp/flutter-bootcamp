@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:marketplace_apps/buyer/buyer_screen.dart';
 import 'package:marketplace_apps/seller/product/index_screen.dart';
 import 'package:marketplace_apps/seller/seller_screen.dart';
+import 'package:marketplace_apps/util/auth.dart';
+import 'package:marketplace_apps/util/config.dart';
 import 'register.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,53 +38,47 @@ class _LoginState extends State<Login> {
       _isLoading = true;
     });
 
-    final url = Uri.parse('http://backend-bootcamp.localhost/api/login');
+    final url = Uri.parse('${Config().baseUrl}/login');
     final body = {
       "email": _controllerUsername.text,
       "password": _controllerPassword.text
     };
 
     try {
+      final headers = await Auth.getHeaders();
       final response = await http.post(
         url,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: json.encode(body),
+        headers: headers,
+        body: jsonEncode(body),
       );
-
+      final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          // Login berhasil
-          if (data['user'] == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => SellerScreen()),
-            );
-          } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => BuyerScreen()),
-            );
-          }
+        final token = data['token'];
+        await Auth.saveToken(token);
+        // Login berhasil
+        if (data['data']['is_seller'] == 1) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SellerScreen()),
+          );
         } else {
-          // Tampilkan error jika login gagal
-          _showErrorDialog(data['message'] ?? "Login failed.");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => BuyerScreen()),
+          );
         }
       } else {
-        // Tampilkan error jika ada masalah di server
-        _showErrorDialog("User tidak ditemukan");
+        // Tampilkan error jika login gagal
+        _showErrorDialog("Login failed.");
       }
     } catch (e) {
-      // Tampilkan error jika ada masalah di server
-        _showErrorDialog("User tidak ditemukan");
+      _showErrorDialog("Login failed.");
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
-  } 
+  }
 
   // Fungsi untuk menampilkan dialog error
   void _showErrorDialog(String message) {
@@ -100,7 +96,6 @@ class _LoginState extends State<Login> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

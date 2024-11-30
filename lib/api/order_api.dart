@@ -1,12 +1,15 @@
 import 'package:marketplace_apps/model/order_model.dart';
 import 'package:http/http.dart' show Client;
+import 'package:marketplace_apps/util/auth.dart';
 import 'dart:convert';
+
+import 'package:marketplace_apps/util/config.dart';
 class OrderApi {
-  final String baseUrl = "http://127.0.0.1:8002";
   Client client = Client();
 
   Future<List<Order>> getOrders() async {
-    final response = await client.get(Uri.parse("$baseUrl/api/chat"));
+    final headers = await Auth.getHeaders();
+    final response = await client.get(Uri.parse("${Config().baseUrl}/chat"), headers: headers);
     // print("Response body: ${response.body}");
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -23,10 +26,10 @@ class OrderApi {
 
   Future<bool> createOrder(Order data) async {
     // print("Creating blog with data: ${blogToJson(data)}");
-    
+    final headers = await Auth.getHeaders();
     final response = await client.post(
-      Uri.parse("$baseUrl/api/chat"),
-      headers: {"content-type": "application/json"},
+      Uri.parse("${Config().baseUrl}/chat"),
+      headers: headers,
       body: orderToJson(data),
     );
 
@@ -41,9 +44,10 @@ class OrderApi {
   }
 
   Future<bool> updateOrder(Order data) async {
+    final headers = await Auth.getHeaders();
     final response = await client.put(
-      Uri.parse("$baseUrl/api/chat/${data.id}"),
-      headers: {"content-type": "application/json"},
+      Uri.parse("${Config().baseUrl}/chat/${data.id}"),
+      headers: headers,
       body: orderToJson(data),
     );
     if (response.statusCode == 200) {
@@ -54,9 +58,10 @@ class OrderApi {
   }
 
   Future<bool> deleteOrder(int id) async {
+    final headers = await Auth.getHeaders();
     final response = await client.delete(
-      Uri.parse("$baseUrl/api/chat/$id"),
-      headers: {"content-type": "application/json"},
+      Uri.parse("${Config().baseUrl}/chat/$id"),
+      headers: headers,
     );
     if (response.statusCode == 204) {
       return true;
