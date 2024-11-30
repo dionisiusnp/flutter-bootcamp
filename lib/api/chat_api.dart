@@ -1,12 +1,14 @@
 import 'package:marketplace_apps/model/chat_model.dart';
 import 'package:http/http.dart' show Client;
+import 'package:marketplace_apps/util/auth.dart';
 import 'dart:convert';
+import 'package:marketplace_apps/util/config.dart';
 class ChatApi {
-  final String baseUrl = "http://127.0.0.1:8001";
   Client client = Client();
 
   Future<List<Chat>> getChatsSeller() async {
-    final response = await client.get(Uri.parse("$baseUrl/api/chat/seller"));
+    final headers = await Auth.getHeaders();
+    final response = await client.get(Uri.parse("${Config().baseUrl}/chat/seller"), headers: headers);
     print("Response body: ${response.body}");
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -22,7 +24,8 @@ class ChatApi {
   }
 
   Future<List<Chat>> getChats() async {
-    final response = await client.get(Uri.parse("$baseUrl/api/chat"));
+    final headers = await Auth.getHeaders();
+    final response = await client.get(Uri.parse("${Config().baseUrl}/chat"), headers: headers);
     // print("Response body: ${response.body}");
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -38,11 +41,11 @@ class ChatApi {
   }
 
   Future<bool> createChat(Chat data) async {
+    final headers = await Auth.getHeaders();
     // print("Creating blog with data: ${blogToJson(data)}");
-    
     final response = await client.post(
-      Uri.parse("$baseUrl/api/chat"),
-      headers: {"content-type": "application/json"},
+      Uri.parse("${Config().baseUrl}/chat"),
+      headers: headers,
       body: chatToJson(data),
     );
 
@@ -57,9 +60,10 @@ class ChatApi {
   }
 
   Future<bool> updateChat(Chat data) async {
+    final headers = await Auth.getHeaders();
     final response = await client.put(
-      Uri.parse("$baseUrl/api/chat/${data.id}"),
-      headers: {"content-type": "application/json"},
+      Uri.parse("${Config().baseUrl}/chat/${data.id}"),
+      headers: headers,
       body: chatToJson(data),
     );
     if (response.statusCode == 200) {
@@ -70,9 +74,10 @@ class ChatApi {
   }
 
   Future<bool> deleteChat(int id) async {
+    final headers = await Auth.getHeaders();
     final response = await client.delete(
-      Uri.parse("$baseUrl/api/chat/$id"),
-      headers: {"content-type": "application/json"},
+      Uri.parse("${Config().baseUrl}/chat/$id"),
+      headers: headers,
     );
     if (response.statusCode == 204) {
       return true;
