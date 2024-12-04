@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/api/product_category_api.dart';
+import 'package:marketplace_apps/model/product_category_model.dart';
 import 'package:marketplace_apps/seller/category/create_screen.dart';
 
-class IndexCategoryScreen extends StatelessWidget {
+class IndexCategoryScreen extends StatefulWidget {
+  @override
+  _IndexCategoryState createState() => _IndexCategoryState();
+}
+
+class _IndexCategoryState extends State<IndexCategoryScreen> {
+  late ProductCategoryApi productCategoryApi;
+  late Future<List<ProductCategory>> futureCategoryProduct;
+
+  @override
+  void initState() {
+    super.initState();
+    productCategoryApi = new ProductCategoryApi();
+    futureCategoryProduct = productCategoryApi.getProductCategory();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,26 +31,34 @@ class IndexCategoryScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
-      body: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        children: [
-          _buildCategoryItem('Books', Icons.menu_book, Colors.red),
-          _buildCategoryItem('Vehicle', Icons.directions_car, Colors.blue),
-          _buildCategoryItem('Clothes', Icons.checkroom, Colors.orange),
-          _buildCategoryItem('Shoes', Icons.hiking, Colors.brown),
-          _buildCategoryItem('Computer & Accessories', Icons.computer, Colors.green),
-          _buildCategoryItem('Smartphone', Icons.smartphone, Colors.blueAccent),
-          _buildCategoryItem('Watch', Icons.watch, Colors.orangeAccent),
-          _buildCategoryItem('Mother & Baby', Icons.child_care, Colors.yellow),
-        ],
+      body: FutureBuilder<List<ProductCategory>>(
+        future: futureCategoryProduct,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text("No categories found."));
+          }
+
+          final categories = snapshot.data!;
+          return ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              return _buildCategoryItem(category.name ?? 'Unknown', Icons.category, Colors.blue);
+            },
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
-            context, 
-            MaterialPageRoute(builder: (context) => CreateCategoryScreen())
+            context,
+            MaterialPageRoute(builder: (context) => CreateCategoryScreen()),
           );
-          // Action for add category
         },
         child: Icon(Icons.add),
       ),
