@@ -5,15 +5,17 @@ class User {
   String? name;
   String? email;
   String? password;
+  String? address;
   DateTime? created_at;
 
-  User({this.id, this.name, this.email, this.password, this.created_at});
+  User({this.id, this.name, this.email, this.password, this.address, this.created_at});
   factory User.fromJson(Map<String, dynamic> map) {
     return User(
         id: map["id"],
         name: map["name"],
         email: map["email"],
         password: map["password"],
+        address: map["address"],
         created_at: DateTime.parse(map["created_at"]));
   }
 
@@ -23,13 +25,14 @@ class User {
       "name": name,
       "email": email,
       "password": password,
+      "address": address,
       "created_at": created_at?.toIso8601String()
     };
   }
 
   @override
   String toString() {
-    return 'User{id: $id, name: $name, email: $email, password: $password, created_at: $created_at}';
+    return 'User{id: $id, name: $name, email: $email, password: $password, address: $address, created_at: $created_at}';
   }
 }
 

@@ -48,7 +48,7 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
             itemCount: categories.length,
             itemBuilder: (context, index) {
               final category = categories[index];
-              return _buildCategoryItem(category.name ?? 'Unknown', Icons.category, Colors.blue);
+              return _buildCategoryItem(category.name ?? 'Unknown', Icons.category, Colors.blue, category.id ?? 0);
             },
           );
         },
@@ -65,7 +65,7 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
     );
   }
 
-  Widget _buildCategoryItem(String title, IconData icon, Color color) {
+  Widget _buildCategoryItem(String title, IconData icon, Color color, int id) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 6.0),
       child: ListTile(
@@ -78,10 +78,69 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
           ),
           child: Icon(icon, color: color),
         ),
-        title: Text(title, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500)),
-        onTap: () {
-          // Handle category tap
-        },
+        title: Text(
+          title,
+          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min, // Atur ukuran agar tidak mengambil ruang penuh
+          children: [
+            IconButton(
+              icon: Icon(Icons.edit, color: Colors.blue),
+              onPressed: () {
+                _editCategory(id); // Panggil fungsi edit dengan ID
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                _deleteCategory(title, id); // Panggil fungsi delete dengan ID
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _editCategory(int id) {
+    print('todo edit');
+  }
+
+  void _deleteCategory(String categoryName, int id) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Confirm Delete'),
+        content: Text('Apakah anda yakin ingin menghapus "$categoryName"?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop(); // Tutup dialog tanpa aksi
+            },
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async { // Tambahkan async di sini
+              final success = await productCategoryApi.deleteProductCategory(id); // Gunakan instance
+              Navigator.of(ctx).pop(); // Tutup dialog
+
+              if (success) {
+                setState(() {
+                  futureCategoryProduct = productCategoryApi.getProductCategory(); // Refresh data
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Kategori produk berhasil dihapus.')),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Produk gagal terhapus')),
+                );
+              }
+            },
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
+          )
+        ],
       ),
     );
   }

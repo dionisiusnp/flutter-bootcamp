@@ -9,7 +9,7 @@ class ProductCategoryApi {
     Future<List<ProductCategory>> getProductCategory() async {
       final headers = await Auth.getHeaders();
       final response = await client.get(Uri.parse("${Config().baseUrl}/product-category"), headers: headers);
-      print("Response body: ${response.body}"); // Testing output di sini
+     
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
         final data = jsonResponse['data'] as List<dynamic>;
@@ -19,6 +19,20 @@ class ProductCategoryApi {
       } else {
         print("Failed to load categories. Status code: ${response.statusCode}");
         return [];
+      }
+    }
+
+    Future<bool> deleteProductCategory(int id) async {
+      final headers = await Auth.getHeaders();
+      final response = await client.delete(
+        Uri.parse("${Config().baseUrl}/product-category/$id"),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
       }
     }
 }

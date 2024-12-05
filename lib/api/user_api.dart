@@ -2,36 +2,22 @@ import 'package:marketplace_apps/model/user_model.dart';
 import 'package:http/http.dart' show Client;
 import 'dart:convert';
 
+import 'package:marketplace_apps/util/auth.dart';
+import 'package:marketplace_apps/util/config.dart';
 
 class UserApi {
-  final String baseUrl = "http://127.0.0.1:8000";
   Client client = Client();
 
-  Future<bool> register(User data) async {
-    final response = await client.post(
-      Uri.parse("$baseUrl/api/blog"),
-      headers: {"content-type": "application/json"},
-      body: userToJson(data),
-    );
+  Future<User?> getUser() async {
+    final headers = await Auth.getHeaders();
+    final userId = await Auth.getUserid();
+    final response = await client.get(Uri.parse("${Config().baseUrl}/user/${userId}"), headers: headers);
 
     if (response.statusCode == 200) {
-      return true;
+      final data = json.decode(response.body);
+      return User.fromJson(data['data']);
     } else {
-      return false;
-    }
-  }
-
-  Future<bool> login(User data) async {
-    final response = await client.post(
-      Uri.parse("$baseUrl/api/blog"),
-      headers: {"content-type": "application/json"},
-      body: userToJson(data),
-    );
-
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      return false;
+      return null;
     }
   }
 }
