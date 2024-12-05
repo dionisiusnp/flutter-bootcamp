@@ -52,9 +52,14 @@ class _LoginState extends State<Login> {
         body: jsonEncode(body),
       );
       final data = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
         final token = data['token'];
+        final userId = data['data']['id'];
+        
         await Auth.saveToken(token);
+        await Auth.saveUserid(userId);
+  
         // Login berhasil
         if (data['data']['is_seller'] == 1) {
           Navigator.pushReplacement(

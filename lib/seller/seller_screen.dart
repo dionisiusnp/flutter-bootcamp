@@ -19,7 +19,7 @@ class _SellerScreenState extends State<SellerScreen>{
     IndexProductScreen(),
     IndexCategoryScreen(),
     IndexChatScreen(),
-    IndexProfileScreen(),
+    IndexProfileScreeen(),
   ];
 
   void _onTap(int index) {
@@ -58,16 +58,6 @@ class _SellerScreenState extends State<SellerScreen>{
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context, 
-            MaterialPageRoute(builder: (context) => CreateProductScreen()),
-          );
-        },
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
