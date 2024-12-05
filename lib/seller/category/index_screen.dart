@@ -48,24 +48,32 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
             itemCount: categories.length,
             itemBuilder: (context, index) {
               final category = categories[index];
-              return _buildCategoryItem(category.name ?? 'Unknown', Icons.category, Colors.blue, category.id ?? 0);
+              return _buildCategoryItem(category, category.name ?? 'Unknown', Icons.category, Colors.blue, category.id ?? 0);
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          // Menunggu hasil dari CreateCategoryScreen
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CreateCategoryScreen()),
           );
+
+          // Jika berhasil menambahkan kategori, refresh tampilan
+          if (result != null && result) {
+            setState(() {
+              futureCategoryProduct = productCategoryApi.getProductCategory(); // Refresh data kategori
+            });
+          }
         },
         child: Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildCategoryItem(String title, IconData icon, Color color, int id) {
+  Widget _buildCategoryItem(ProductCategory $category, String title, IconData icon, Color color, int id) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 6.0),
       child: ListTile(
@@ -88,7 +96,17 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
             IconButton(
               icon: Icon(Icons.edit, color: Colors.blue),
               onPressed: () {
-                _editCategory(id); // Panggil fungsi edit dengan ID
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CreateCategoryScreen(category: $category)),
+                ).then((value) {
+                  // Jika berhasil di edit, refresh data kategori
+                  if (value != null && value) {
+                    setState(() {
+                      futureCategoryProduct = productCategoryApi.getProductCategory(); // Refresh data kategori
+                    });
+                  }
+                });
               },
             ),
             IconButton(
@@ -101,10 +119,6 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
         ),
       ),
     );
-  }
-
-  void _editCategory(int id) {
-    print('todo edit');
   }
 
   void _deleteCategory(String categoryName, int id) {

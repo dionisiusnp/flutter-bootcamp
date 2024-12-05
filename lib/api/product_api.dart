@@ -1,5 +1,6 @@
 import 'package:http/http.dart' show Client;
 import 'package:marketplace_apps/model/product_model.dart';
+import 'package:marketplace_apps/model/user_model.dart';
 import 'package:marketplace_apps/util/auth.dart';
 import 'dart:convert';
 import 'package:marketplace_apps/util/config.dart';
@@ -19,6 +20,21 @@ class ProductApi {
       } else {
         print("Failed to load product. Status code: ${response.statusCode}");
         return [];
+      }
+    }
+
+    Future<bool> createProduct(Product data) async {
+      final headers = await Auth.getHeaders();
+      final response = await client.delete(
+        Uri.parse("${Config().baseUrl}/product"),
+        headers: headers,
+        body: productToJson(data)
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
       }
     }
 
