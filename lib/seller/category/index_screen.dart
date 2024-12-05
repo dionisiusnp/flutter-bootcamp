@@ -95,18 +95,18 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
           children: [
             IconButton(
               icon: Icon(Icons.edit, color: Colors.blue),
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CreateCategoryScreen(category: $category)),
-                ).then((value) {
-                  // Jika berhasil di edit, refresh data kategori
-                  if (value != null && value) {
-                    setState(() {
-                      futureCategoryProduct = productCategoryApi.getProductCategory(); // Refresh data kategori
-                    });
-                  }
-                });
+                  MaterialPageRoute(builder: (context) => CreateCategoryScreen(category: $category,)),
+                );
+
+                // Jika berhasil menambahkan kategori, refresh tampilan
+                if (result != null && result) {
+                  setState(() {
+                    futureCategoryProduct = productCategoryApi.getProductCategory(); // Refresh data kategori
+                  });
+                } // Panggil fungsi edit dengan ID
               },
             ),
             IconButton(

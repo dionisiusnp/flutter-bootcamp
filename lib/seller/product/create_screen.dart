@@ -1,14 +1,95 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/api/product_api.dart';
+import 'package:marketplace_apps/api/product_category_api.dart'; // Pastikan API sudah benar
+import 'package:marketplace_apps/model/product_category_model.dart';
+import 'package:marketplace_apps/model/product_model.dart'; // Pastikan model sudah benar
 
 class CreateProductScreen extends StatefulWidget {
+  final Product? product; // Menambahkan parameter kategori untuk edit
+
+  CreateProductScreen({Key? key, this.product}) : super(key: key);
+
   @override
   _CreateProductScreenState createState() => _CreateProductScreenState();
 }
 
 class _CreateProductScreenState extends State<CreateProductScreen> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _productNameController = TextEditingController();
+  final TextEditingController _productPriceController = TextEditingController();
+
   String? _category;
-  final List<String> _categories = ['Furniture', 'Electronics', 'Clothing', 'Books'];
+  List<ProductCategory> _categories = []; // List kategori produk
+  bool _isLoading = true; // Menunggu data kategori dimuat
+
+  late ProductApi _productApi;
+
+  @override
+  void initState() {
+    super.initState();
+    _productApi = ProductApi();
+    _loadCategories(); // Memanggil fungsi untuk mengambil kategori produk dari API
+  }
+
+  // Fungsi untuk mengambil kategori dari API
+  Future<void> _loadCategories() async {
+    ProductCategoryApi productCategoryApi = ProductCategoryApi();
+    List<ProductCategory> categories = await productCategoryApi.getProductCategory();
+    setState(() {
+      _categories = categories; // Menyimpan kategori yang diterima dari API
+      _isLoading = false; // Data kategori sudah dimuat
+    });
+  }
+
+  Future<void> _submitCategory() async {
+    setState(() => _isLoading = true);
+
+
+    int? price = int.tryParse(_productPriceController.text);
+
+    Product product = Product(
+      id: widget.product?.id,  // Jika ada kategori yang diedit, masukkan ID
+      name: _productNameController.text,
+      price: price,
+      shipping_cost: 0,
+      is_available: 1, 
+    );
+
+    bool success;
+    if (widget.product == null) {
+      success = await _productApi.createProduct(product);  // Create kategori baru
+    } else {
+      success = await _productApi.updateProduct(product);  // Update kategori yang ada
+    }
+
+    setState(() => _isLoading = false);
+
+    // Menampilkan dialog berdasarkan status pengiriman
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(success ? 'Success' : 'Error'),
+        content: Text(
+          success
+              ? (widget.product == null ? 'Product has been successfully added!' : 'Product has been successfully updated!')
+              : 'Failed to process product. Please try again later.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx); // Close the dialog
+              if (success) {
+                Navigator.pop(context, true); // Mengirim nilai true untuk memberi tahu berhasil
+              } else {
+                Navigator.pop(context); // Jika gagal tetap kembali
+              }
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +103,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
           },
         ),
         title: Text(
-          'Add Produk',
+          'Add Product',
           style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         elevation: 0,
@@ -34,33 +115,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    // TODO: Implement image upload logic
-                  },
-                  child: Container(
-                    width: 222,
-                    height: 222,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.cloud_upload, size: 50, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text(
-                          'Upload image\n222x222 or larger recommend',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              // Hapus bagian upload gambar
               SizedBox(height: 16),
               Text(
                 'Product name *',
@@ -68,6 +123,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
               ),
               SizedBox(height: 8),
               TextFormField(
+                controller: _productNameController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Enter product name',
@@ -92,6 +148,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
                         ),
                         SizedBox(height: 8),
                         TextFormField(
+                          controller: _productPriceController,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             hintText: 'Enter price',
@@ -148,29 +205,31 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _category,
-                items: _categories
-                    .map((category) => DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _category = value;
-                  });
-                },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please choose a category';
-                  }
-                  return null;
-                },
-              ),
+              _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : DropdownButtonFormField<String>(
+                      value: _category,
+                      items: _categories
+                          .map((category) => DropdownMenuItem(
+                                value: category.name,
+                                child: Text(category.name ?? 'Unknown'),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _category = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please choose a category';
+                        }
+                        return null;
+                      },
+                    ),
               SizedBox(height: 24),
               Center(
                 child: ElevatedButton(
@@ -179,7 +238,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
                       // TODO: Implement save product logic
                     }
                   },
-                  child: Text('Save Changes'),
+                  child: Text('Save Product'),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     textStyle: TextStyle(fontSize: 16),

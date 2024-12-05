@@ -25,8 +25,23 @@ class ProductApi {
 
     Future<bool> createProduct(Product data) async {
       final headers = await Auth.getHeaders();
-      final response = await client.delete(
+      final response = await client.post(
         Uri.parse("${Config().baseUrl}/product"),
+        headers: headers,
+        body: productToJson(data)
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    Future<bool> updateProduct(Product data) async {
+      final headers = await Auth.getHeaders();
+      final response = await client.put(
+        Uri.parse("${Config().baseUrl}/product/${data.id}"),
         headers: headers,
         body: productToJson(data)
       );
