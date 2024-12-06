@@ -17,6 +17,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _productNameController = TextEditingController();
   final TextEditingController _productPriceController = TextEditingController();
+  final TextEditingController _productDescriptionController = TextEditingController();
 
   String? _category;
   List<ProductCategory> _categories = []; // List kategori produk
@@ -28,6 +29,15 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
   void initState() {
     super.initState();
     _productApi = ProductApi();
+
+    if (widget.product != null) {
+      _productNameController.text = widget.product!.name ?? ''; 
+      _productPriceController.text = widget.product!.price?.toString() ?? '';
+      _productDescriptionController.text = widget.product!.description ?? '';
+      _category = widget.product!.product_category_id?.toString(); 
+    }
+
+
     _loadCategories(); // Memanggil fungsi untuk mengambil kategori produk dari API
   }
 
@@ -52,7 +62,9 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
       name: _productNameController.text,
       price: price,
       shipping_cost: 0,
-      is_available: 1, 
+      is_available: 1,
+      description: _productDescriptionController.text,
+      product_category_id: _category != null ? int.tryParse(_category!) : null,
     );
 
     bool success;
@@ -164,26 +176,6 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Discount Price',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 8),
-                        TextFormField(
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: 'Enter discount price',
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
               SizedBox(height: 16),
@@ -193,6 +185,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
               ),
               SizedBox(height: 8),
               TextFormField(
+                controller: _productDescriptionController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Write about your product...',
@@ -207,24 +200,24 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
               SizedBox(height: 8),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
-                  : DropdownButtonFormField<String>(
-                      value: _category,
+                  : DropdownButtonFormField<int>(
+                      value: _category != null ? int.tryParse(_category!) : null, // Pastikan tipe data cocok
                       items: _categories
-                          .map((category) => DropdownMenuItem(
-                                value: category.name,
+                          .map((category) => DropdownMenuItem<int>(
+                                value: category.id, // Menggunakan ID kategori sebagai value
                                 child: Text(category.name ?? 'Unknown'),
                               ))
                           .toList(),
                       onChanged: (value) {
                         setState(() {
-                          _category = value;
+                          _category = value?.toString(); // Simpan ID kategori dalam bentuk string
                         });
                       },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null) {
                           return 'Please choose a category';
                         }
                         return null;
@@ -235,7 +228,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
-                      // TODO: Implement save product logic
+                      _submitCategory();
                     }
                   },
                   child: Text('Save Product'),

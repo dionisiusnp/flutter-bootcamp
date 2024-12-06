@@ -7,10 +7,14 @@ import 'package:marketplace_apps/util/config.dart';
 class ProductApi {
   Client client = Client();
 
-    Future<List<Product>> getProduct() async {
+    Future<List<Product>> getProduct({String? query}) async {
       final headers = await Auth.getHeaders();
-      final response = await client.get(Uri.parse("${Config().baseUrl}/product"), headers: headers);
-     
+      final url = Uri.parse("${Config().baseUrl}/product").replace(
+        queryParameters: query != null && query.isNotEmpty ? {'q': query} : null,
+      );
+
+      final response = await client.get(url, headers: headers);
+
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
         final data = jsonResponse['data'] as List<dynamic>;
