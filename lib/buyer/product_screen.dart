@@ -6,21 +6,20 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
+  bool isFavorite = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: Row(
           children: [
             Icon(Icons.shopping_basket),
             SizedBox(width: 8),
-            Text('Produk'),
+            Text('Produk',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
@@ -111,14 +110,32 @@ class _ProductScreenState extends State<ProductScreen> {
                               ),
                               Text('2022'),
                               Text('Short Description'),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: IconButton(
-                                  icon: Icon(Icons.shopping_cart),
-                                  onPressed: () {
-                                    // Add to cart functionality
-                                  },
-                                ),
+                              // button wishlist and cart
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end, // Adjust spacing
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.favorite,
+                                      color: isFavorite ? Colors.red : Colors.grey
+                                    ),
+                                    onPressed: () {
+                                      // change color to red
+                                      setState(() {
+                                        isFavorite = !isFavorite;
+                                      });
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.shopping_cart, 
+                                      color: Colors.blue
+                                    ),
+                                    onPressed: () {
+                                      // Add to cart functionality
+                                    },
+                                  ),
+                                ],
                               ),
                             ],
                           ),
