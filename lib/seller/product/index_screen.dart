@@ -11,12 +11,20 @@ class IndexProductScreen extends StatefulWidget {
 class _IndexProductState extends State<IndexProductScreen> {
   late ProductApi productApi;
   late Future<List<Product>> futureProduct;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = ''; 
 
   @override
   void initState() {
     super.initState();
     productApi = ProductApi();
     futureProduct = productApi.getProduct();
+  }
+
+  void _performSearch() {
+    setState(() {
+      futureProduct = productApi.getProduct(query: _searchQuery); // Update query pencarian
+    });
   }
 
   final ScrollController _scrollController = ScrollController();
@@ -26,23 +34,42 @@ class _IndexProductState extends State<IndexProductScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Row(
-          children: [
-            Icon(Icons.shopping_cart, color: Colors.black),
-            SizedBox(width: 8),
-            Text(
-              'Produk',
-              style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+        title: Container(
+          margin: EdgeInsets.symmetric(vertical: 8), // Margin atas dan bawah untuk estetika
+          decoration: BoxDecoration(
+            color: Colors.grey[200], // Warna latar belakang TextField
+            borderRadius: BorderRadius.circular(8), // Membuat border melengkung
+            border: Border.all(color: Colors.grey), // Menambahkan border abu-abu
+          ),
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search, color: Colors.grey), // Ikon di sisi kiri
+              hintText: 'Search products...',
+              hintStyle: TextStyle(color: Colors.grey),
+              border: InputBorder.none, // Hilangkan border default
+              contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Padding dalam TextField
             ),
-            Spacer(),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.search, color: Colors.black),
-            ),
-          ],
+            onSubmitted: (value) {
+              setState(() {
+                _searchQuery = value;
+                _performSearch();
+              });
+            },
+          ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.black),
+            onPressed: () {
+              setState(() {
+                _searchQuery = _searchController.text;
+                _performSearch();
+              });
+            },
+          ),
+        ],
         elevation: 0,
-        automaticallyImplyLeading: false,
       ),
       body: FutureBuilder<List<Product>>(
         future: futureProduct,
@@ -63,17 +90,6 @@ class _IndexProductState extends State<IndexProductScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   children: [
-                    DropdownButton<String>(
-                      value: 'harga',
-                      items: ['harga', 'nama', 'populer']
-                          .map((value) => DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              ))
-                          .toList(),
-                      onChanged: (value) {},
-                    ),
-                    Spacer(),
                     Text(
                       '${products.length} barang ditemukan',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -104,11 +120,18 @@ class _IndexProductState extends State<IndexProductScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CreateProductScreen()),
           );
+
+          // Jika berhasil menambahkan produk, refresh tampilan
+          if (result != null && result) {
+            setState(() {
+              futureProduct = productApi.getProduct(); // Refresh data produk
+            });
+          }
         },
         child: Icon(Icons.add),
       ),
@@ -138,6 +161,11 @@ class _IndexProductState extends State<IndexProductScreen> {
             ),
             SizedBox(height: 8),
             Text(
+              product.name ?? '',
+              style: TextStyle(fontSize: 16, color: Colors.grey[700], fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
               'Rp ${product.price.toString()}',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
@@ -151,8 +179,18 @@ class _IndexProductState extends State<IndexProductScreen> {
                 // Edit Button
                 IconButton(
                   icon: Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () {
-                    
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CreateProductScreen(product: product)),
+                    );
+
+                    // Jika berhasil menambahkan produk, refresh tampilan
+                    if (result != null && result) {
+                      setState(() {
+                        futureProduct = productApi.getProduct(); // Refresh data produk
+                      });
+                    } 
                   },
                 ),
                 // Delete Button

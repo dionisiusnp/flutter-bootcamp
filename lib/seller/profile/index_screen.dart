@@ -25,20 +25,10 @@ class _IndexCategoryState extends State<IndexProfileScreeen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
-        ),
         title: Text(
           "Profile",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.bar_chart, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: FutureBuilder<User?>(
         future: futureUser,
@@ -62,19 +52,6 @@ class _IndexCategoryState extends State<IndexProfileScreeen> {
                         CircleAvatar(
                           radius: 50,
                           backgroundImage: AssetImage('images/profile.jpg'), // Ganti dengan path gambar profil Anda
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: CircleAvatar(
-                            radius: 15,
-                            backgroundColor: Colors.blue,
-                            child: Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                              size: 15,
-                            ),
-                          ),
                         ),
                       ],
                     ),
