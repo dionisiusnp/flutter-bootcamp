@@ -13,6 +13,16 @@ class Auth {
     return prefs.getString('auth_token');
   }
 
+  static Future<void> saveUserid(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('user_id', userId);
+  }
+
+  static Future<int?> getUserid() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('user_id');
+  }
+
   static Future<void> logout({required BuildContext context}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
