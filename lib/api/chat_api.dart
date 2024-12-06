@@ -12,18 +12,14 @@ class ChatApi {
     print("Response body: ${response.body}");
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
       List<dynamic> data = jsonResponse['data'];
-
-      List<Chat> chats = data.map<Chat>((item) => Chat.fromJson(item)).toList();
-
-      return chats;
+      return data.map<Chat>((item) => Chat.fromJson(item)).toList();
     } else {
       return [];
     }
   }
 
-  Future<List<Chat>> getChats() async {
+  Future<List<Chat>> getChatsBuyer() async {
     final headers = await Auth.getHeaders();
     final response = await client.get(Uri.parse("${Config().baseUrl}/chat"), headers: headers);
     // print("Response body: ${response.body}");
