@@ -22,6 +22,36 @@ class ProductCategoryApi {
       }
     }
 
+    Future<bool> createProductCategory(ProductCategory data) async {
+      final headers = await Auth.getHeaders();
+      final response = await client.post(
+        Uri.parse("${Config().baseUrl}/product-category"),
+        headers: headers,
+        body: productCategoryToJson(data)
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    Future<bool> updateProductCategory(ProductCategory data) async {
+      final headers = await Auth.getHeaders();
+      final response = await client.put(
+        Uri.parse("${Config().baseUrl}/product-category/${data.id}"),
+        headers: headers,
+        body: productCategoryToJson(data)
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
     Future<bool> deleteProductCategory(int id) async {
       final headers = await Auth.getHeaders();
       final response = await client.delete(

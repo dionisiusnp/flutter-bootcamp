@@ -10,9 +10,7 @@ import 'register.dart';
 import 'package:http/http.dart' as http;
 
 class Login extends StatefulWidget {
-  const Login({
-    Key? key,
-  }) : super(key: key);
+  const Login({super.key});
 
   @override
   State<Login> createState() => _LoginState();

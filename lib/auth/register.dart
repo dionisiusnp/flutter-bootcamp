@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:marketplace_apps/util/config.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -33,7 +34,7 @@ class _RegisterState extends State<Register> {
       _isLoading = true;
     });
 
-    final url = Uri.parse('http://backend-bootcamp.localhost/api/register');
+    final url = Uri.parse('${Config().baseUrl}/register');
     final body = {
       "name": _controllerUsername.text,
       "email": _controllerEmail.text,
