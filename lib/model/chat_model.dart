@@ -4,7 +4,7 @@ class Chat {
   int? id; // Untuk create dan update message
   int? userId;
   String? message; // Untuk create dan update message
-  int? isSellerReply; // Untuk create dan update message
+  bool? isSellerReply; // Untuk create dan update message
   String? latestMessageTime; // Untuk daftar chat
   String? latestMessage; // Untuk daftar chat
   User? user; // Untuk daftar chat
@@ -24,7 +24,7 @@ class Chat {
       id: map['id'],
       userId: map['user_id'],
       message: map['message'],
-      isSellerReply: map['is_seller_reply'],
+      isSellerReply: map['is_seller_reply'] == 1,
       latestMessageTime: map['latest_message_time'],
       latestMessage: map['latest_message'],
       user: map['userable'] != null ? User.fromJson(map['userable']) : null,
@@ -36,7 +36,7 @@ class Chat {
       "id": id,
       "user_id": userId,
       "message": message,
-      "is_seller_reply": isSellerReply,
+      "is_seller_reply": isSellerReply == true ? 1 : 0,
     };
   }
 
