@@ -2,50 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:marketplace_apps/api/chat_api.dart';
 import 'package:marketplace_apps/model/chat_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class ChatRoomScreen extends StatefulWidget {
-  final String userName;
+class RoomChatScreen extends StatefulWidget {
+  final int? userId;
+  final String? userName;
 
-  const ChatRoomScreen({Key? key, this.userName = 'Admin'}) : super(key: key);
+  const RoomChatScreen({Key? key, this.userId, this.userName}) : super(key: key);
 
   @override
-  _ChatRoomScreenState createState() => _ChatRoomScreenState();
+  _RoomChatScreenState createState() => _RoomChatScreenState();
 }
 
-class _ChatRoomScreenState extends State<ChatRoomScreen> {
+class _RoomChatScreenState extends State<RoomChatScreen> {
   late ChatApi chatApi;
   late Future<List<Chat>> _chats;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  int? userId;
 
   @override
   void initState() {
     super.initState();
     chatApi = ChatApi();
     _chats = _fetchChats();
-    _initializeUserId();
-  }
-
-  Future<void> _initializeUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    final id = prefs.getInt('user_id');
-    setState(() {
-      userId = id;
-      _chats = _fetchChats();
-    });
   }
 
   Future<List<Chat>> _fetchChats() async {
-    if (userId == null) return [];
-    return await chatApi.getChatsBuyer(userId!);
+    return await chatApi.getChatsBuyer(widget.userId!);
   }
 
   Future<void> _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
     try {
-      await chatApi.createChat(userId: userId!, message: message.trim());
+      await chatApi.createChat(userId: widget.userId!, message: message.trim());
       setState(() {
         _chats = _fetchChats();
       });
@@ -113,7 +101,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       Chat chat = chats[index];
       bool isMe = chat.isSellerReply ?? false;
       return Align(
-        alignment: isMe ? Alignment.centerLeft : Alignment.centerRight,
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 5),
           padding: const EdgeInsets.all(12),
@@ -133,7 +121,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   );
 }
 
-Widget _buildMessageInputField() {
+  Widget _buildMessageInputField() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
