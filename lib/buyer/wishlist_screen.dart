@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/util/auth.dart';
 
 class WishlistScreen extends StatefulWidget {
   @override
@@ -28,6 +29,33 @@ class _WishlistScreenState extends State<WishlistScreen> {
       'price': 'Rp. 400',
     }
   ];
+
+  Future<void> _logout() async {
+    final bool confirm = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Apakah Anda yakin ingin logout?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm) {
+      await Auth.logout(context: context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +65,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
           IconButton(
             icon: Icon(Icons.favorite),
             onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+            tooltip: "Logout",
           ),
         ],
       ),

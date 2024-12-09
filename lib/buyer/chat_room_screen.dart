@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:marketplace_apps/api/chat_api.dart';
 import 'package:marketplace_apps/model/chat_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -55,6 +58,18 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Gagal mengirim pesan: $error")),
       );
+    }
+  }
+
+  File? _imageFile;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
     }
   }
 
@@ -142,6 +157,10 @@ Widget _buildMessageInputField() {
       ),
       child: Row(
         children: [
+          IconButton(
+          icon: const Icon(Icons.image, color: Colors.blue),
+          onPressed: _pickImage,
+        ),
           Expanded(
             child: TextField(
               controller: _messageController,
