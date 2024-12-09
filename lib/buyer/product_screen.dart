@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/api/product_api.dart';
+import 'package:marketplace_apps/model/product_model.dart';
+import 'package:marketplace_apps/util/config.dart';
 
 class ProductScreen extends StatefulWidget {
   @override
@@ -6,8 +9,26 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
-  bool isFavorite = false;
+  late ProductApi productApi;
+  late Future<List<Product>> futureProduct;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = ''; 
+
   @override
+  void initState() {
+    super.initState();
+    productApi = ProductApi();
+    futureProduct = productApi.getProduct();
+  }
+
+  void _performSearch() {
+    setState(() {
+      futureProduct = productApi.getProduct(query: _searchQuery);
+    });
+  }
+
+  final ScrollController _scrollController = ScrollController();
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -19,17 +40,23 @@ class _ProductScreenState extends State<ProductScreen> {
                 style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,
-                    fontWeight: FontWeight.bold)),
+                    fontWeight: FontWeight.bold
+                )
+            ),
           ],
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              // Search functionality
+              setState(() {
+                _searchQuery = _searchController.text;
+                _performSearch();
+              });
             },
           ),
         ],
+        elevation: 0,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(50),
           child: Padding(
@@ -71,80 +98,109 @@ class _ProductScreenState extends State<ProductScreen> {
           ),
         ),
       ),
-      body: Padding(
+      body: FutureBuilder<List<Product>>(
+        future: futureProduct,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text("No products found."));
+          }
+
+          final products = snapshot.data!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    Text(
+                      '${products.length} produk',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: GridView.builder(
+                    controller: _scrollController,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, // Jumlah kolom
+                      mainAxisSpacing: 16, // Jarak vertikal antar item
+                      crossAxisSpacing: 16, // Jarak horizontal antar item
+                      childAspectRatio: 2 / 2.5, // Rasio ukuran item
+                    ),
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      return _buildProductCard(products[index]);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProductCard(Product product) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      elevation: 4,
+      child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('102.220 barang ditemukan', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 8),
             Expanded(
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 3 / 4,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
+              child: Container(
+                color: Colors.grey[300],
+                child: Center(
+                  child: Image.asset(
+                    'images/produk-digital.jpeg', // Gunakan asset untuk gambar produk
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
                 ),
-                itemCount: 6, // Replace with the length of your product list
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Container(
-                            color: Colors.grey[300], // Placeholder for image
-                            child: Center(child: Text('Image')),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Rp 5.000.000',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text('2022'),
-                              Text('Short Description'),
-                              // button wishlist and cart
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end, // Adjust spacing
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.favorite,
-                                      color: isFavorite ? Colors.red : Colors.grey
-                                    ),
-                                    onPressed: () {
-                                      // change color to red
-                                      setState(() {
-                                        isFavorite = !isFavorite;
-                                      });
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.shopping_cart, 
-                                      color: Colors.blue
-                                    ),
-                                    onPressed: () {
-                                      // Add to cart functionality
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
               ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              product.name ?? '',
+              style: TextStyle(fontSize: 16, color: Colors.grey[700], fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '${Config().formatCurrency(product.price ?? 0)}',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              product.description ?? '',
+              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Edit Button
+                IconButton(
+                  icon: Icon(Icons.favorite, color: Colors.grey),
+                  onPressed: () async {
+                    // Jika berhasil menambahkan produk, refresh tampilan
+                  },
+                ),
+                // Delete Button
+                IconButton(
+                  icon: Icon(Icons.shopping_cart, color: Colors.blueAccent),
+                  onPressed: () {
+                  },
+                ),
+              ],
             ),
           ],
         ),
