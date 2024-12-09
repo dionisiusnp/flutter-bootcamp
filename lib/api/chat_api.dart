@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:marketplace_apps/model/chat_model.dart';
 import 'package:http/http.dart' show Client;
 import 'package:marketplace_apps/util/auth.dart';
 import 'dart:convert';
 import 'package:marketplace_apps/util/config.dart';
+import 'package:http/http.dart' as http;
 
 class ChatApi {
   Client client = Client();
@@ -36,23 +39,41 @@ class ChatApi {
   }
 
   Future<bool> createChat(
-      {required int userId, required String message}) async {
-    final headers = await Auth.getHeaders();
-    final bool isSellerReply = userId <= 1;
-    final Chat chatData = Chat(
-      userId: userId,
-      message: message,
-      isSellerReply: isSellerReply,
-    );
+      {required int userId, required String message, File? imageFile}) async {
+    try {
+      final headers = await Auth.getHeaders();
+      final bool isSellerReply = userId <= 1;
 
-    final response = await client.post(
-      Uri.parse("${Config().baseUrl}/chat"),
-      headers: headers,
-      body: chatToJson(chatData),
-    );
-    if (response.statusCode == 200) {
-      return true;
-    } else {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse("${Config().baseUrl}/chat"),
+      );
+
+      request.headers.addAll(headers);
+      request.fields['user_id'] = userId.toString();
+      request.fields['message'] = message;
+      request.fields['is_seller_reply'] = isSellerReply.toString();
+
+      if (imageFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            imageFile.path,
+          ),
+        );
+      }
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        var responseBody = await response.stream.bytesToString();
+        print("Gagal mengirim chat: ${response.statusCode} - $responseBody");
+        return false;
+      }
+    } catch (e) {
+      print("Terjadi kesalahan: $e");
       return false;
     }
   }
