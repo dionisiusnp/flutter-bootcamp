@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:marketplace_apps/api/product_api.dart';
 import 'package:marketplace_apps/model/product_model.dart';
 import 'package:marketplace_apps/seller/product/create_screen.dart';
+import 'package:marketplace_apps/util/auth.dart';
 
 class IndexProductScreen extends StatefulWidget {
   @override
@@ -25,6 +26,32 @@ class _IndexProductState extends State<IndexProductScreen> {
     setState(() {
       futureProduct = productApi.getProduct(query: _searchQuery); // Update query pencarian
     });
+  }
+
+  Future<void> _logout() async {
+    final bool confirm = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Apakah Anda yakin ingin logout?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm) {
+      await Auth.logout(context: context);
+    }
   }
 
   final ScrollController _scrollController = ScrollController();
@@ -67,6 +94,11 @@ class _IndexProductState extends State<IndexProductScreen> {
                 _performSearch();
               });
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+            tooltip: "Logout",
           ),
         ],
         elevation: 0,

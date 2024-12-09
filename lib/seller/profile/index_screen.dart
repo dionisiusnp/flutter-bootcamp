@@ -18,6 +18,32 @@ class _IndexCategoryState extends State<IndexProfileScreeen> {
     userApi = new UserApi();
     futureUser = UserApi().getUser();
   }
+
+  Future<void> _logout() async {
+    final bool confirm = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Apakah Anda yakin ingin logout?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm) {
+      await Auth.logout(context: context);
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -29,6 +55,13 @@ class _IndexCategoryState extends State<IndexProfileScreeen> {
           "Profile",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+            tooltip: "Logout",
+          ),
+        ],
       ),
       body: FutureBuilder<User?>(
         future: futureUser,
