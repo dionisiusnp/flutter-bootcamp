@@ -34,18 +34,29 @@ class _IndexProductState extends State<IndexProductScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: 'Search products...',
-            border: InputBorder.none,
+        title: Container(
+          margin: EdgeInsets.symmetric(vertical: 8), // Margin atas dan bawah untuk estetika
+          decoration: BoxDecoration(
+            color: Colors.grey[200], // Warna latar belakang TextField
+            borderRadius: BorderRadius.circular(8), // Membuat border melengkung
+            border: Border.all(color: Colors.grey), // Menambahkan border abu-abu
           ),
-          onSubmitted: (value) {
-            setState(() {
-              _searchQuery = value;
-              _performSearch();
-            });
-          },
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search, color: Colors.grey), // Ikon di sisi kiri
+              hintText: 'Search products...',
+              hintStyle: TextStyle(color: Colors.grey),
+              border: InputBorder.none, // Hilangkan border default
+              contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Padding dalam TextField
+            ),
+            onSubmitted: (value) {
+              setState(() {
+                _searchQuery = value;
+                _performSearch();
+              });
+            },
+          ),
         ),
         actions: [
           IconButton(

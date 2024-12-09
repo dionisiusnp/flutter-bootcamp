@@ -10,9 +10,7 @@ import 'register.dart';
 import 'package:http/http.dart' as http;
 
 class Login extends StatefulWidget {
-  const Login({
-    Key? key,
-  }) : super(key: key);
+  const Login({super.key});
 
   @override
   State<Login> createState() => _LoginState();
@@ -53,14 +51,13 @@ class _LoginState extends State<Login> {
       );
       print(response.body);
       final data = jsonDecode(response.body);
-
       if (response.statusCode == 200) {
         final token = data['token'];
         final userId = data['data']['id'];
-        
+
         await Auth.saveToken(token);
         await Auth.saveUserid(userId);
-  
+
         // Login berhasil
         if (data['data']['is_seller'] == 1) {
           Navigator.pushReplacement(
