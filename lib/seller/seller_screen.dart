@@ -42,7 +42,7 @@ class _SellerScreenState extends State<SellerScreen>{
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'Product',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.category),
