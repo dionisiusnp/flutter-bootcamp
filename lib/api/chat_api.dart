@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:marketplace_apps/model/chat_model.dart';
 import 'package:http/http.dart' show Client;
@@ -38,8 +39,12 @@ class ChatApi {
     }
   }
 
-  Future<bool> createChat(
-      {required int userId, required String message, File? imageFile}) async {
+  Future<bool> createChat({
+        required int userId,
+        required String message,
+        Uint8List? fileBytes, // Data file dalam format byte array
+        String? fileName,     // Nama file
+        }) async {
     try {
       final headers = await Auth.getHeaders();
       final bool isSellerReply = userId <= 1;
@@ -54,26 +59,27 @@ class ChatApi {
       request.fields['message'] = message;
       request.fields['is_seller_reply'] = isSellerReply.toString();
 
-      if (imageFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'image',
-            imageFile.path,
-          ),
-        );
-      }
+      if (fileBytes != null && fileName != null) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          fileBytes,
+          filename: fileName,
+        ),
+      );
+    }
 
       var response = await request.send();
 
       if (response.statusCode == 200) {
         return true;
       } else {
-        var responseBody = await response.stream.bytesToString();
-        print("Gagal mengirim chat: ${response.statusCode} - $responseBody");
+        // var responseBody = await response.stream.bytesToString();
+        // print("Gagal mengirim chat: ${response.statusCode} - $responseBody");
         return false;
       }
     } catch (e) {
-      print("Terjadi kesalahan: $e");
+      // print("Terjadi kesalahan: $e");
       return false;
     }
   }
