@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace_apps/api/product_api.dart';
+import 'package:marketplace_apps/buyer/cart/cart_screen.dart';
 import 'package:marketplace_apps/model/product_model.dart';
+import 'package:marketplace_apps/util/auth.dart';
 import 'package:marketplace_apps/util/config.dart';
 
 class ProductScreen extends StatefulWidget {
@@ -27,6 +29,32 @@ class _ProductScreenState extends State<ProductScreen> {
     });
   }
 
+  Future<void> _logout() async {
+    final bool confirm = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Apakah Anda yakin ingin logout?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm) {
+      await Auth.logout(context: context);
+    }
+  }
+
   final ScrollController _scrollController = ScrollController();
 
   Widget build(BuildContext context) {
@@ -47,13 +75,18 @@ class _ProductScreenState extends State<ProductScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.shopping_cart),
             onPressed: () {
-              setState(() {
-                _searchQuery = _searchController.text;
-                _performSearch();
-              });
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CartScreen())
+              );
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+            tooltip: "Logout",
           ),
         ],
         elevation: 0,
@@ -74,25 +107,33 @@ class _ProductScreenState extends State<ProductScreen> {
                       children: [
                         Expanded(
                           child: TextField(
+                            controller: _searchController,
                             decoration: InputDecoration(
                               hintText: 'Cari produk...',
                               border: InputBorder.none,
                             ),
+                            onSubmitted: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                                _performSearch();
+                              });
+                            },
                           ),
                         ),
-                        Icon(Icons.search),
+                        IconButton(
+                          icon: Icon(Icons.search),
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = _searchController.text;
+                              _performSearch();
+                            });
+                          },
+                        ),
                       ],
                     ),
                   ),
                 ),
                 SizedBox(width: 8),
-                ElevatedButton.icon(
-                  icon: Icon(Icons.sort),
-                  label: Text('Harga'),
-                  onPressed: () {
-                    // Sorting functionality
-                  },
-                ),
               ],
             ),
           ),
@@ -163,7 +204,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 color: Colors.grey[300],
                 child: Center(
                   child: Image.asset(
-                    'images/produk-digital.jpeg', // Gunakan asset untuk gambar produk
+                    product.image ?? 'images/produk-digital.jpeg', // Gunakan asset untuk gambar produk
                     fit: BoxFit.cover,
                     width: double.infinity,
                   ),
@@ -172,12 +213,12 @@ class _ProductScreenState extends State<ProductScreen> {
             ),
             SizedBox(height: 8),
             Text(
-              product.name ?? '',
+              '${Config().formatCurrency(product.price ?? 0)}',
               style: TextStyle(fontSize: 16, color: Colors.grey[700], fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text(
-              '${Config().formatCurrency(product.price ?? 0)}',
+              product.name ?? '',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
@@ -187,23 +228,49 @@ class _ProductScreenState extends State<ProductScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // Edit Button
-                IconButton(
-                  icon: Icon(Icons.favorite, color: Colors.grey),
-                  onPressed: () async {
-                    // Jika berhasil menambahkan produk, refresh tampilan
-                  },
-                ),
-                // Delete Button
                 IconButton(
                   icon: Icon(Icons.shopping_cart, color: Colors.blueAccent),
                   onPressed: () {
+                    // _addProduct(product);
                   },
                 ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _addProduct(product) {
+    // setState(() {
+    //   // Ensure the price field exists and is not null, else provide a default value
+    //   double price = product['price'] ?? 0.0;
+    //   // Find the product in the cart
+    //   var existingProduct = _addedProducts.firstWhere(
+    //     (p) => p['name'] == product['name'],
+    //     orElse: () =>
+    //         Map<String, dynamic>(), // Return an empty map if not found
+    //   );
+
+    //   if (existingProduct.isNotEmpty) {
+    //     // If the product exists, increment the quantity
+    //     existingProduct['quantity']++;
+    //   } else {
+    //     // If the product doesn't exist, add it to the cart with quantity 1
+    //     _addedProducts.add({
+    //       ...product,
+    //       'quantity': 1,
+    //       'price': price, // Ensure price is added to the cart
+    //     });
+    //   }
+    // });
+
+    // Show SnackBar after product is added
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${product["name"]} berhasil ditambahkan ke keranjang!'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
