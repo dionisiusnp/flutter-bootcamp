@@ -9,7 +9,7 @@ class OrderApi {
 
   Future<List<Order>> getOrders() async {
     final headers = await Auth.getHeaders();
-    final response = await client.get(Uri.parse("${Config().baseUrl}/chat"), headers: headers);
+    final response = await client.get(Uri.parse("${Config().baseUrl}/order"), headers: headers);
     // print("Response body: ${response.body}");
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -28,7 +28,7 @@ class OrderApi {
     // print("Creating blog with data: ${blogToJson(data)}");
     final headers = await Auth.getHeaders();
     final response = await client.post(
-      Uri.parse("${Config().baseUrl}/chat"),
+      Uri.parse("${Config().baseUrl}/order"),
       headers: headers,
       body: orderToJson(data),
     );
@@ -46,7 +46,7 @@ class OrderApi {
   Future<bool> updateOrder(Order data) async {
     final headers = await Auth.getHeaders();
     final response = await client.put(
-      Uri.parse("${Config().baseUrl}/chat/${data.id}"),
+      Uri.parse("${Config().baseUrl}/order/${data.id}"),
       headers: headers,
       body: orderToJson(data),
     );
@@ -60,7 +60,7 @@ class OrderApi {
   Future<bool> deleteOrder(int id) async {
     final headers = await Auth.getHeaders();
     final response = await client.delete(
-      Uri.parse("${Config().baseUrl}/chat/$id"),
+      Uri.parse("${Config().baseUrl}/order/$id"),
       headers: headers,
     );
     if (response.statusCode == 204) {

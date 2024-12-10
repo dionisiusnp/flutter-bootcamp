@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace_apps/buyer/orders_screen.dart';
-import 'package:marketplace_apps/buyer/product_screen.dart';
+import 'package:marketplace_apps/buyer/product/product_screen.dart';
 import 'package:marketplace_apps/buyer/wishlist_screen.dart';
+import 'package:marketplace_apps/seller/profile/index_screen.dart';
 
 class BuyerScreen extends StatefulWidget {
   @override
@@ -15,7 +16,7 @@ class _BuyerScreenState extends State<BuyerScreen> {
   final List<Widget> _screens = [
     ProductScreen(),
     OrdersScreen(),
-    WishlistScreen(), // Biodata Usaha
+    IndexProfileScreeen(), // Biodata Usaha
   ];
 
   void _onTap(int index) {
@@ -48,8 +49,8 @@ class _BuyerScreenState extends State<BuyerScreen> {
             label: 'Orders',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            label: 'Wishlist',
+            icon: Icon(Icons.account_circle_outlined),
+            label: 'Profile',
           ),
         ],
       ),
