@@ -13,7 +13,6 @@ class Config {
     String stringValue = value.toStringAsFixed(0); // No decimal points
     String result = '';
     int count = 0;
-
     // Iterate backward through the string to insert commas
     for (int i = stringValue.length - 1; i >= 0; i--) {
       result = stringValue[i] + result;
@@ -23,7 +22,6 @@ class Config {
         count = 0;
       }
     }
-
     return 'Rp' + result;
   }
 }
