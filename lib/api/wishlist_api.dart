@@ -2,12 +2,15 @@ import 'package:marketplace_apps/model/wishlist_model.dart';
 import 'package:http/http.dart' show Client;
 import 'dart:convert';
 
+import 'package:marketplace_apps/util/auth.dart';
+import 'package:marketplace_apps/util/config.dart';
+
 class WishlistApi {
-  final String baseUrl = 'http://127.0.0.1:8000';
   Client client = Client();
 
   Future<List<Wishlist>> getWishlists() async {
-    final response = await client.get(Uri.parse("$baseUrl/api/wishlist"));
+    final headers = await Auth.getHeaders();
+    final response = await client.get(Uri.parse("${Config().baseUrl}/wishlist"), headers: headers);
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
       List<dynamic> data = jsonResponse['data'];
