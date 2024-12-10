@@ -50,6 +50,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   XFile? _imageXFile; // Untuk General Handling
   File? _imageFile; // Untuk Android/iOS
   Uint8List? _imageBytes; // Untuk Browser
+  String? _imageName;
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -63,7 +64,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       }
 
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imageName = pickedFile.name;
       });
     }
   }
@@ -75,16 +76,17 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       String? fileName;
 
       if (kIsWeb && _imageBytes != null) {
-        fileBytes = _imageBytes; // Browser menggunakan byte array
+        fileBytes = _imageBytes;
         fileName = _imageXFile?.name;
       } else if (_imageFile != null) {
-        fileBytes = await _imageFile!.readAsBytes(); // Android/iOS gunakan File
+        fileBytes = await _imageFile!.readAsBytes();
         fileName = _imageFile!.path.split('/').last;
       }
 
       await chatApi.createChat(
         userId: userId!,
         message: message.trim(),
+        isSellerReply: false,
         fileBytes: fileBytes,
         fileName: fileName,
       );
@@ -92,6 +94,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         _chats = _fetchChats();
         _imageFile = null;
         _imageBytes = null;
+        _imageName = null;
       });
       _messageController.clear();
       _chats.then((_) => _scrollToBottom());
@@ -149,35 +152,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
-  // Widget _buildChatList(List<Chat> chats) {
-  //   return ListView.builder(
-  //     controller: _scrollController,
-  //     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-  //     itemCount: chats.length,
-  //     itemBuilder: (context, index) {
-  //       Chat chat = chats[index];
-  //       bool isMe = chat.isSellerReply ?? false;
-  //       return Align(
-  //         alignment: isMe ? Alignment.centerLeft : Alignment.centerRight,
-  //         child: Container(
-  //           margin: const EdgeInsets.symmetric(vertical: 5),
-  //           padding: const EdgeInsets.all(12),
-  //           decoration: BoxDecoration(
-  //             color: isMe ? Colors.blue.shade100 : Colors.grey.shade300,
-  //             borderRadius: BorderRadius.circular(12),
-  //           ),
-  //           child: Text(
-  //             chat.message ?? '',
-  //             style: TextStyle(
-  //               color: isMe ? Colors.black : Colors.black87,
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
-
   Widget _buildChatList(List<Chat> chats) {
     return ListView.builder(
       controller: _scrollController,
@@ -188,9 +162,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         bool isMe = chat.isSellerReply ?? false;
 
         List<String>? mediaUrls = chat.mediaUrls;
-        // List<String>? mediaUrls = chat.mediaUrls?.map((url) {
-        //   return url.replaceFirst('localhost', '127.0.0.1');
-        // }).toList();
 
         return Align(
           alignment: isMe ? Alignment.centerLeft : Alignment.centerRight,
@@ -198,7 +169,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             margin: const EdgeInsets.symmetric(vertical: 5),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isMe ? Colors.blue.shade100 : Colors.grey.shade300,
+              color: isMe ? Colors.grey.shade300 : Colors.blue.shade100,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -206,32 +177,81 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   isMe ? CrossAxisAlignment.start : CrossAxisAlignment.end,
               children: [
                 if (chat.message != null && chat.message!.isNotEmpty)
-                  Text(
-                    chat.message!,
-                    style: TextStyle(
-                      color: isMe ? Colors.black : Colors.black87,
-                    ),
-                  ),
-                if (mediaUrls != null && mediaUrls.isNotEmpty)
-                  ...mediaUrls.map(
-                    (url) => Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          url,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(
-                            Icons.broken_image,
-                            color: Colors.grey,
-                            size: 50,
-                          ),
-                        ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      chat.message!,
+                      style: TextStyle(
+                        color: isMe ? Colors.black87 : Colors.black,
                       ),
                     ),
                   ),
+                if (mediaUrls != null && mediaUrls.isNotEmpty)
+                ...mediaUrls.map(
+                  (url) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          _showFullScreenImage(context, url);
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            url,
+                            fit: BoxFit.cover,
+                            width: 100,
+                            height: 100,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Icon(
+                                  Icons.broken_image,
+                                  color: Colors.grey,
+                                  size: 50,
+                                ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ).toList(),
               ],
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFullScreenImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.black.withOpacity(0.9),
+          child: Stack(
+            children: [
+              Center(
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Icon(
+                    Icons.broken_image,
+                    color: Colors.grey,
+                    size: 50,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -245,26 +265,62 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         color: Colors.grey.shade200,
         border: Border(top: BorderSide(color: Colors.grey.shade300)),
       ),
-      child: Row(
+      child: Column(
         children: [
-          IconButton(
-            icon: const Icon(Icons.image, color: Colors.blue),
-            onPressed: _pickImage,
-          ),
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                hintText: "Ketik pesan...",
-                border: InputBorder.none,
+          if (_imageName != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: kIsWeb ? MemoryImage(_imageBytes!) : FileImage(_imageFile!),
+                        fit: BoxFit.cover,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.cancel, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        _imageFile = null;
+                        _imageBytes = null;
+                        _imageName = null;
+                      });
+                    },
+                  ),
+                ],
               ),
-              textInputAction: TextInputAction.send,
-              onSubmitted: (value) => _sendMessage(value),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.send, color: Colors.blue),
-            onPressed: () => _sendMessage(_messageController.text),
+          ],
+          Row(
+            children: [
+              if (_imageName == null)
+              IconButton(
+                icon: const Icon(Icons.image, color: Colors.blue),
+                onPressed: _pickImage,
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  decoration: const InputDecoration(
+                    hintText: "Ketik pesan...",
+                    border: InputBorder.none,
+                  ),
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (value) => _sendMessage(value),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.send, color: Colors.blue),
+                onPressed: () => _sendMessage(_messageController.text),
+              ),
+            ],
           ),
         ],
       ),

@@ -40,35 +40,31 @@ class ChatApi {
   }
 
   Future<bool> createChat({
-        required int userId,
-        required String message,
-        Uint8List? fileBytes, // Data file dalam format byte array
-        String? fileName,     // Nama file
-        }) async {
+    required int userId,
+    required String message,
+    required bool isSellerReply,
+    Uint8List? fileBytes, // Data file dalam format byte array
+    String? fileName, // Nama file
+  }) async {
     try {
       final headers = await Auth.getHeaders();
-      final bool isSellerReply = userId <= 1;
-
       var request = http.MultipartRequest(
         'POST',
         Uri.parse("${Config().baseUrl}/chat"),
       );
-
       request.headers.addAll(headers);
       request.fields['user_id'] = userId.toString();
       request.fields['message'] = message;
       request.fields['is_seller_reply'] = isSellerReply.toString();
-
       if (fileBytes != null && fileName != null) {
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          'image',
-          fileBytes,
-          filename: fileName,
-        ),
-      );
-    }
-
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'image',
+            fileBytes,
+            filename: fileName,
+          ),
+        );
+      }
       var response = await request.send();
 
       if (response.statusCode == 200) {

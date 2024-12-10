@@ -1,5 +1,10 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:marketplace_apps/api/chat_api.dart';
 import 'package:marketplace_apps/model/chat_model.dart';
 
@@ -30,12 +35,52 @@ class _RoomChatScreenState extends State<RoomChatScreen> {
     return await chatApi.getChatsBuyer(widget.userId!);
   }
 
+  XFile? _imageXFile; // Untuk General Handling
+  File? _imageFile; // Untuk Android/iOS
+  Uint8List? _imageBytes; // Untuk Browser
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      if (kIsWeb) {
+        _imageXFile = pickedFile;
+        _imageBytes = await pickedFile.readAsBytes();
+      } else {
+        _imageFile = File(pickedFile.path);
+      }
+
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
     try {
-      await chatApi.createChat(userId: widget.userId!, message: message.trim());
+      Uint8List? fileBytes;
+      String? fileName;
+      
+      if (kIsWeb && _imageBytes != null) {
+        fileBytes = _imageBytes; // Browser menggunakan byte array
+        fileName = _imageXFile?.name;
+      } else if (_imageFile != null) {
+        fileBytes = await _imageFile!.readAsBytes(); // Android/iOS gunakan File
+        fileName = _imageFile!.path.split('/').last;
+      }
+
+      await chatApi.createChat(
+        userId: widget.userId!,
+        message: message.trim(),
+        isSellerReply: true,
+        fileBytes: fileBytes,
+        fileName: fileName,
+        );
       setState(() {
         _chats = _fetchChats();
+        _imageFile = null;
+        _imageBytes = null;
       });
       _messageController.clear();
       _chats.then((_) => _scrollToBottom());
@@ -100,6 +145,9 @@ class _RoomChatScreenState extends State<RoomChatScreen> {
     itemBuilder: (context, index) {
       Chat chat = chats[index];
       bool isMe = chat.isSellerReply ?? false;
+
+      List<String>? mediaUrls = chat.mediaUrls;
+
       return Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
@@ -109,17 +157,91 @@ class _RoomChatScreenState extends State<RoomChatScreen> {
             color: isMe ? Colors.blue.shade100 : Colors.grey.shade300,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(
-            chat.message ?? '',
-            style: TextStyle(
-              color: isMe ? Colors.black : Colors.black87,
+          child: Column(
+              crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                if (chat.message != null && chat.message!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      chat.message!,
+                      style: TextStyle(
+                        color: isMe ? Colors.black : Colors.black87,
+                      ),
+                    ),
+                  ),
+                if (mediaUrls != null && mediaUrls.isNotEmpty)
+                ...mediaUrls.map(
+                  (url) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          _showFullScreenImage(context, url);
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            url,
+                            fit: BoxFit.cover,
+                            width: 100,
+                            height: 100,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Icon(
+                                  Icons.broken_image,
+                                  color: Colors.grey,
+                                  size: 50,
+                                ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ).toList(),
+              ],
             ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
+
+  void _showFullScreenImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.black.withOpacity(0.9),
+          child: Stack(
+            children: [
+              Center(
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Icon(
+                    Icons.broken_image,
+                    color: Colors.grey,
+                    size: 50,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildMessageInputField() {
     return Container(
