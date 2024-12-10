@@ -5,5 +5,5 @@ class Config {
 
   Config._internal();
 
-  final String baseUrl = "http://127.0.0.1:8001/api";
+  final String baseUrl = "https://9a61-202-51-113-149.ngrok-free.app/api";
 }
