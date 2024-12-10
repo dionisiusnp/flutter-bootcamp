@@ -8,6 +8,7 @@ class Chat {
   String? latestMessageTime; // Untuk daftar chat
   String? latestMessage; // Untuk daftar chat
   User? user; // Untuk daftar chat
+  List<String>? mediaUrls;
 
   Chat({
     this.id,
@@ -17,6 +18,7 @@ class Chat {
     this.latestMessageTime,
     this.latestMessage,
     this.user,
+    this.mediaUrls,
   });
 
   factory Chat.fromJson(Map<String, dynamic> map) {
@@ -28,6 +30,9 @@ class Chat {
       latestMessageTime: map['latest_message_time'],
       latestMessage: map['latest_message'],
       user: map['userable'] != null ? User.fromJson(map['userable']) : null,
+      mediaUrls: map['media_urls'] != null
+          ? List<String>.from(map['media_urls'].map((url) => url))
+          : [],
     );
   }
 
@@ -37,13 +42,14 @@ class Chat {
       "user_id": userId,
       "message": message,
       "is_seller_reply": isSellerReply == true ? 1 : 0,
+      "media_urls": mediaUrls,
     };
   }
 
   @override
   String toString() {
     return 'Chat{id: $id, userId: $userId, message: $message, isSellerReply: $isSellerReply, '
-        'latestMessageTime: $latestMessageTime, latestMessage: $latestMessage, user: $user}';
+        'latestMessageTime: $latestMessageTime, latestMessage: $latestMessage, user: $user, mediaUrls: $mediaUrls}';
   }
 }
 

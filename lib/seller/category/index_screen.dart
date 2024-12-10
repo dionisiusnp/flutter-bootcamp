@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:marketplace_apps/api/product_category_api.dart';
 import 'package:marketplace_apps/model/product_category_model.dart';
 import 'package:marketplace_apps/seller/category/create_screen.dart';
+import 'package:marketplace_apps/util/auth.dart';
 
 class IndexCategoryScreen extends StatefulWidget {
   @override
@@ -19,6 +20,32 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
     futureCategoryProduct = productCategoryApi.getProductCategory();
   }
 
+  Future<void> _logout() async {
+    final bool confirm = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Apakah Anda yakin ingin logout?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm) {
+      await Auth.logout(context: context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,6 +55,13 @@ class _IndexCategoryState extends State<IndexCategoryScreen> {
           'Category',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+            tooltip: "Logout",
+          ),
+        ],
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
