@@ -7,7 +7,7 @@ class OrderItemApi {
   Client client = Client();
 
   Future<List<OrderItemModel>> getOrdersItem() async {
-    final response = await client.get(Uri.parse("${Config().baseUrl}/chat"));
+    final response = await client.get(Uri.parse("${Config().baseUrl}/order-item"));
     // print("Response body: ${response.body}");
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -26,7 +26,7 @@ class OrderItemApi {
     // print("Creating blog with data: ${blogToJson(data)}");
     
     final response = await client.post(
-      Uri.parse("${Config().baseUrl}/chat"),
+      Uri.parse("${Config().baseUrl}/order-item"),
       headers: {"content-type": "application/json"},
       body: orderitemmodelToJson(data),
     );
@@ -43,7 +43,7 @@ class OrderItemApi {
 
   Future<bool> updateOrderItem(OrderItemModel data) async {
     final response = await client.put(
-      Uri.parse("${Config().baseUrl}/chat/${data.id}"),
+      Uri.parse("${Config().baseUrl}/order-item/${data.id}"),
       headers: {"content-type": "application/json"},
       body: orderitemmodelToJson(data),
     );
@@ -56,7 +56,7 @@ class OrderItemApi {
 
   Future<bool> deleteOrderItem(int id) async {
     final response = await client.delete(
-      Uri.parse("${Config().baseUrl}/chat/$id"),
+      Uri.parse("${Config().baseUrl}/order-item/$id"),
       headers: {"content-type": "application/json"},
     );
     if (response.statusCode == 204) {
