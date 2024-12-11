@@ -3,7 +3,7 @@ import 'dart:convert';
 class OrderItemModel {
   int? id;
   int? order_id;
-  String? product_id;
+  int? product_id;
   int? quantity;
   int? price;
   int? shipping_cost;
