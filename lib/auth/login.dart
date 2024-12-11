@@ -49,7 +49,6 @@ class _LoginState extends State<Login> {
         headers: headers,
         body: jsonEncode(body),
       );
-      print(response.body);
       final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
         final token = data['token'];

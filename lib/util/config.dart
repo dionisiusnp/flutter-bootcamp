@@ -5,7 +5,7 @@ class Config {
 
   Config._internal();
 
-  final String baseUrl = "https://9a61-202-51-113-149.ngrok-free.app/api";
+  final String baseUrl = "https://6ee3-114-5-245-28.ngrok-free.app/api";
 
   // add function to format number
   String formatCurrency(int value) {
