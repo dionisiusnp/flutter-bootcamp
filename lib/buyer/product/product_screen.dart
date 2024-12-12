@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_apps/api/order_item_api.dart';
 import 'package:marketplace_apps/api/product_api.dart';
+import 'package:marketplace_apps/api/user_api.dart';
 import 'package:marketplace_apps/buyer/cart/cart_screen.dart';
+import 'package:marketplace_apps/model/order_item_model.dart';
 import 'package:marketplace_apps/model/product_model.dart';
+import 'package:marketplace_apps/model/user_model.dart';
 import 'package:marketplace_apps/util/auth.dart';
 import 'package:marketplace_apps/util/config.dart';
 
@@ -11,16 +15,22 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
+  late UserApi userApi;
   late ProductApi productApi;
+  late OrderItemApi orderItemApi;
+  late Future<User?> futureUser;
   late Future<List<Product>> futureProduct;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = ''; 
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    orderItemApi = OrderItemApi();
     productApi = ProductApi();
     futureProduct = productApi.getProduct();
+    futureUser = UserApi().getUser();
   }
 
   void _performSearch() {
@@ -74,6 +84,49 @@ class _ProductScreenState extends State<ProductScreen> {
           ],
         ),
         actions: [
+          FutureBuilder<User?>(
+          future: futureUser,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return IconButton(
+                icon: Icon(Icons.error, color: Colors.red),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error fetching user data.")),
+                  );
+                },
+              );
+            } else if (!snapshot.hasData) {
+              return IconButton(
+                icon: Icon(Icons.person, color: Colors.grey),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("User not logged in.")),
+                  );
+                },
+              );
+            }
+
+            final user = snapshot.data!;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Row(
+                children: [
+                  SizedBox(width: 8),
+                  Text(
+                    user.name ?? 'User',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
           IconButton(
             icon: Icon(Icons.shopping_cart),
             onPressed: () {
@@ -231,7 +284,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 IconButton(
                   icon: Icon(Icons.shopping_cart, color: Colors.blueAccent),
                   onPressed: () {
-                    // _addProduct(product);
+                    _addProduct(product);
                   },
                 ),
               ],
@@ -242,36 +295,45 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  void _addProduct(product) {
-    // setState(() {
-    //   // Ensure the price field exists and is not null, else provide a default value
-    //   double price = product['price'] ?? 0.0;
-    //   // Find the product in the cart
-    //   var existingProduct = _addedProducts.firstWhere(
-    //     (p) => p['name'] == product['name'],
-    //     orElse: () =>
-    //         Map<String, dynamic>(), // Return an empty map if not found
-    //   );
+  void _addProduct(product) async {
+    setState(() => _isLoading = true);
+    
+    try {
+      // Resolve the current user
+      final User? user = await futureUser;
 
-    //   if (existingProduct.isNotEmpty) {
-    //     // If the product exists, increment the quantity
-    //     existingProduct['quantity']++;
-    //   } else {
-    //     // If the product doesn't exist, add it to the cart with quantity 1
-    //     _addedProducts.add({
-    //       ...product,
-    //       'quantity': 1,
-    //       'price': price, // Ensure price is added to the cart
-    //     });
-    //   }
-    // });
+      // Check if user is logged in
+      if (user == null || user.id == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('User is not logged in. Please log in to add products.'),
+          ),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
 
-    // Show SnackBar after product is added
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${product["name"]} berhasil ditambahkan ke keranjang!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+      // Get user_id and other product details
+      int userId = user.id!;
+      int productId = product.id!;
+      int quantity = 1;
+      int price = product.price ?? 0;
+      int shippingCost = product.shipping_cost ?? 0;
+      
+      // Example: Add product to cart using an API
+      await orderItemApi.createOrderItem(buyerId: userId, productId: productId, quantity: quantity, price: price, shippingCost: shippingCost);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${product.name} berhasil ditambahkan ke keranjang!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      print('Error adding product to cart: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 }
