@@ -319,19 +319,9 @@ class _ProductScreenState extends State<ProductScreen> {
       int quantity = 1;
       int price = product.price ?? 0;
       int shippingCost = product.shipping_cost ?? 0;
-
-      OrderItemModel orderItem = OrderItemModel(
-        id: 0,
-        order_id: 0,
-        product_id: productId,
-        quantity: quantity,
-        price: price,
-        shipping_cost: shippingCost,
-        total_sub: price * quantity,
-      );
-
+      
       // Example: Add product to cart using an API
-      await orderItemApi.createOrderItem(orderItem);
+      await orderItemApi.createOrderItem(buyerId: userId, productId: productId, quantity: quantity, price: price, shippingCost: shippingCost);
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
